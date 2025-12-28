@@ -10,7 +10,7 @@ import certifi
 ca=certifi.where()
 import pandas as pd
 import numpy as np
-import pymongo
+import pymongo #MongoClient() creates a connection gateway between your Python code and the MongoDB server.
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 
