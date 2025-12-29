@@ -20,12 +20,5 @@ class NetworkSecurityException(Exception):
             f"error message [{self.error_message}]"
         )
         
-if __name__=='__main__':
-    try:
-        logging.info("Entered the try block!!!!")
-        a=1/0
-        print("This will not be printed",a)
-    except Exception as e:
-        raise NetworkSecurityException(e,sys) from e
    
 # sys provides a function (exc_info) to fetch the currently active exception

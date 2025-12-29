@@ -1,9 +1,11 @@
 from datetime import datetime
 import os
 from networksecurity.constants import training_pipeline# with the help of this we could prevent hard coding 
+
 '''This configuration module defines structured paths and parameters for the training pipeline, 
 ensuring reproducibility and separation of concerns.'''
-class TrainingPipelineConfig:
+
+class TrainingPipelineConfig:# an class that stores path NAME
     def __init__(self,timestamp=datetime.now()):
         timestamp=timestamp.strftime("%m_%d_%Y_%H_%M_%S")
         self.pipeline_name=training_pipeline.PIPELINE_NAME
@@ -11,14 +13,15 @@ class TrainingPipelineConfig:
         self.artifact_dir=os.path.join(self.artifact_name,timestamp)
         self.timestamp: str=timestamp
 
-class DataIngestionConfig:
+class DataIngestionConfig:# THIS CLASS CONFIGURATION NEW PATHS with the help of saved directaries names
     def __init__(self,training_pipeline_config:TrainingPipelineConfig):
-        self.data_ingestion_directary: str=os.path.join(
-            training_pipeline_config.artifact_dir,training_pipeline.DATA_INGESTION_DIR_NAME
-        )
-        self.feature_store_file_path: str=os.path.join(
-            self.data_ingestion_directary,training_pipeline.DATA_INGESTION_FEATURE_STORE_DIR,training_pipeline.FILE_NAME
-        )
+        self.data_ingestion_directary: str=os.path.join(## file path of data ingestion is being configured
+            training_pipeline_config.artifact_dir,training_pipeline.DATA_INGESTION_DIR_NAME)
+
+        self.feature_store_file_path: str=os.path.join(# feature store path is being configured
+            self.data_ingestion_directary,training_pipeline.DATA_INGESTION_FEATURE_STORE_DIR,
+            training_pipeline.FILE_NAME)
+
         self.training_file_path = os.path.join(
         self.data_ingestion_directary,
         training_pipeline.TRAIN_FILE_NAME
@@ -27,6 +30,6 @@ class DataIngestionConfig:
         self.data_ingestion_directary,
         training_pipeline.TEST_FILE_NAME
         )
-        self.train_test__ratio:float=training_pipeline.DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO
+        self.train_test_split_ratio:float=training_pipeline.DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO
         self.collection_name: str=training_pipeline.DATA_INGESTION_COLLECTION_NAME
         self.database_name: str=training_pipeline.DATA_INGESTION_DATABASE_NAME
