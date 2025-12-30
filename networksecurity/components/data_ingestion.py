@@ -43,7 +43,7 @@ class DataIngestion:
             raise NetworkSecurityException(e,sys)
 
     def export_data_into_feature_store(self,dataframe: pd.DataFrame):
-        try:## this method makes 
+        try:## this method makes feature store directary 
             feature_store_file_path=self.data_ingestion_config.feature_store_file_path
             dir_path=os.path.dirname(feature_store_file_path)
             os.makedirs(dir_path,exist_ok=True)
@@ -77,7 +77,7 @@ class DataIngestion:
 
     def initialte_data_ingestion(self):
         try:
-            dataframe=self.export_collection_as_dataframe()
+            dataframe=self.export_collection_as_dataframe()# dataframe from mongoDB````````
             dataframe=self.export_data_into_feature_store(dataframe)
             self.split_data_as_train_test(dataframe)
 

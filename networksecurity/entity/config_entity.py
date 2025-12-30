@@ -5,7 +5,7 @@ from networksecurity.constants import training_pipeline# with the help of this w
 '''This configuration module defines structured paths and parameters for the training pipeline, 
 ensuring reproducibility and separation of concerns.'''
 
-class TrainingPipelineConfig:# an class that stores path NAME
+class TrainingPipelineConfig:# an class that stores constant NAME
     def __init__(self,timestamp=datetime.now()):
         timestamp=timestamp.strftime("%m_%d_%Y_%H_%M_%S")
         self.pipeline_name=training_pipeline.PIPELINE_NAME
