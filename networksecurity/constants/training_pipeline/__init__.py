@@ -6,7 +6,7 @@ import numpy as np
 '''
 defining common constants variable for training pipeline
 '''
-TARGET_COLUMN="Results"
+TARGET_COLUMN="Result"
 PIPELINE_NAME:str ="NetworkSecurity"
 ARTIFACT_DIR:str="Artifacts"
 FILE_NAME:str="phisingData.csv"
@@ -49,3 +49,4 @@ DATA_TRANSFORMATION_IMPUTER_PARAMS: dict = {
 DATA_TRANSFORMATION_TRAIN_FILE_PATH: str = "train.npy"
 
 DATA_TRANSFORMATION_TEST_FILE_PATH: str = "test.npy"
+PREPROCESSING_OBJECT_FILE_NAME:str="preprocssing.pkl"
