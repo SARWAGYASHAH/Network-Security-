@@ -1,6 +1,6 @@
 import sys
 import os
-
+import mlflow
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
 
@@ -30,6 +30,18 @@ class ModelTrainer:
         except Exception as e:
             raise NetworkSecurityException(e,sys)
         
+    def track_mlflow(self,best_model,classificationmetric):
+        try:
+            with mlflow.start_run():
+                f1_score=classificationmetric.f1_score
+                precision_score=classificationmetric.precision_score
+                recall_score=classificationmetric.recall_score
+                mlflow.log_metric("f1_score",f1_score)
+                mlflow.log_metric("precision_score",precision_score)
+                mlflow.log_metric("recall_score",recall_score)
+                mlflow.sklearn.log_model(best_model,"model")
+        except:
+            pass
     def train_model(self,X_train,y_train,x_test,y_test):
         models = {# dictionary of machine learning model objects
                 "Random Forest": RandomForestClassifier(verbose=1),
@@ -64,7 +76,7 @@ class ModelTrainer:
                 'n_estimators': [8,16,32,64,128,256]
             } 
         }
-        model_report:dict=evaluate_models(X_train=X_train,y_train=y_train,x_test=x_test,y_test=y_test,
+        model_report:dict=evaluate_models(X_train=X_train,y_train=y_train,X_test=x_test,y_test=y_test,
                                           models=models,param=params)
         # to get the best model score
         best_model_score=max(sorted(model_report.values()))
@@ -73,21 +85,32 @@ class ModelTrainer:
         best_model_name = list(model_report.keys())[
             list(model_report.values()).index(best_model_score)
         ]
-        best_model = models[best_model_name]
-        y_train_pred=best_model.predict(X_train)
+        best_model = models[best_model_name]# this is a model 
+        y_train_pred=best_model.predict(X_train)# the is train model predicted 
 
         classification_train_metric=get_classification_score(y_true=y_train,y_pred=y_train_pred)
+        
+        # track the experiments with mlflow with train metric
+        self.track_mlflow(best_model,classification_train_metric)
+
+
         y_test_pred=best_model.predict(x_test)
         classification_test_metric=get_classification_score(y_true=y_test,y_pred=y_test_pred)
 
+        # track the experiments with mlflow with test metric
+        self.track_mlflow(best_model,classification_test_metric)
+
         preprocessor = load_object(file_path=self.data_transformation_artifact.transformed_object_file_path)
-            
+        # this object tranforms the dataset
+
         model_dir_path = os.path.dirname(self.model_trainer_config.trained_model_file_path)
         os.makedirs(model_dir_path,exist_ok=True)# path configuration of model and making of it
 
         Network_Model=NetworkModel(preprocessor=preprocessor,model=best_model)
-        save_object(self.model_trainer_config.trained_model_file_path,obj=NetworkModel)
-        #model pusher
+        # saving the full pipeline object (preprocessor + model)
+        save_object(self.model_trainer_config.trained_model_file_path,obj=Network_Model)
+
+        #model pusher--> saving of raw model for depyloment
         save_object("final_model/model.pkl",best_model)
         
 
@@ -115,7 +138,7 @@ class ModelTrainer:
                 test_arr[:, -1],
             )
             # added this line
-            model_trainer_artifact=self.train_model(x_train,y_train,x_test,y_test)
+            model_trainer_artifact=self.train_model(X_train=x_train,y_train=y_train,x_test=x_test,y_test=y_test)
             return model_trainer_artifact
         
         except Exception as e:
