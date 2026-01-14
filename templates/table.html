@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Predicted Data</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #020617;
+            --bg-table: #020617;
+            --border: #1e293b;
+            --text-main: #e5e7eb;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-soft: rgba(56, 189, 248, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #020617, #0f172a);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1100px;
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 28px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: var(--bg-table);
+        }
+
+        thead {
+            background: #020617;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--accent-soft);
+        }
+
+        td {
+            color: var(--text-main);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        /* Scrollbar (Webkit) */
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 20px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Prediction Results</h2>
+        <div class="subtitle">
+            Machine Learning Based Network Security Analysis
+        </div>
+
+        <div class="table-wrapper">
+            {{ table | safe }}
+        </div>
+    </div>
+</body>
+
+</html>
