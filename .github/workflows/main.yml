@@ -8,6 +8,9 @@ on:
       - README.md
 
 jobs:
+  # -------------------------
+  # CONTINUOUS INTEGRATION
+  # -------------------------
   integration:
     name: Continuous Integration
     runs-on: ubuntu-latest
@@ -22,6 +25,9 @@ jobs:
       - name: Run unit tests
         run: echo "Running unit tests"
 
+  # -------------------------
+  # CONTINUOUS DELIVERY
+  # -------------------------
   build-and-push-ecr-image:
     name: Continuous Delivery
     needs: integration
@@ -41,11 +47,20 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image to ECR
         env:
-          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
+          set -e
+
+          ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+          echo "ECR_REGISTRY=$ECR_REGISTRY"
+          echo "ECR_REPOSITORY=$ECR_REPOSITORY"
+          echo "IMAGE_TAG=$IMAGE_TAG"
+
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
