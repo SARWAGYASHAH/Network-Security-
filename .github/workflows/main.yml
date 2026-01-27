@@ -2,26 +2,26 @@ name: CI-CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths-ignore:
       - README.md
+  workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 
+# -----------------------------
+# CONTINUOUS INTEGRATION
+# -----------------------------
 jobs:
-  # -----------------------------
-  # CONTINUOUS INTEGRATION
-  # -----------------------------
   integration:
     name: Continuous Integration
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Lint code
         run: echo "Linting repository"
@@ -40,12 +40,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install utilities
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y jq unzip
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -56,7 +51,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Docker image
         env:
@@ -64,52 +59,64 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
+          set -eux
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
   # -----------------------------
   # CONTINUOUS DEPLOYMENT
-  # Runs on EC2 Self-Hosted Runner
+  # EC2 SELF-HOSTED RUNNER
   # -----------------------------
   continuous-deployment:
     name: Continuous Deployment
     needs: build-and-push-ecr-image
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux, x64]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      - name: Verify runner environment
+        shell: bash
+        run: |
+          set -eux
+          whoami
+          uname -a
+          docker --version
+
+      # ✅ Recommended: EC2 IAM Role instead of secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Pull latest image
+        shell: bash
         run: |
-          docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+          set -eux
+          docker pull \
+            ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
       - name: Stop and remove old container (if exists)
+        shell: bash
         run: |
           docker stop networksecurity || true
           docker rm networksecurity || true
-## help onece more
+
       - name: Run Docker container
+        shell: bash
         run: |
+          set -eux
           docker run -d \
+            --restart unless-stopped \
             -p 8080:8080 \
-            --ipc="host" \
             --name networksecurity \
-            -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-            -e AWS_REGION=${{ secrets.AWS_REGION }} \
             ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
-      - name: Cleanup unused Docker resources
+      - name: Cleanup dangling images (safe)
+        shell: bash
         run: |
-          docker system prune -f
+          docker image prune -f
