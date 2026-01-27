@@ -11,9 +11,9 @@ permissions:
   id-token: write
   contents: read
 
-# -----------------------------
+# =============================
 # CONTINUOUS INTEGRATION
-# -----------------------------
+# =============================
 jobs:
   integration:
     name: Continuous Integration
@@ -29,10 +29,10 @@ jobs:
       - name: Run unit tests
         run: echo "Running unit tests"
 
-  # -----------------------------
+  # =============================
   # CONTINUOUS DELIVERY
   # Build & Push Docker Image
-  # -----------------------------
+  # =============================
   build-and-push-ecr-image:
     name: Continuous Delivery
     needs: integration
@@ -63,28 +63,27 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-  # -----------------------------
+  # =============================
   # CONTINUOUS DEPLOYMENT
   # EC2 SELF-HOSTED RUNNER
-  # -----------------------------
+  # =============================
   continuous-deployment:
     name: Continuous Deployment
     needs: build-and-push-ecr-image
     runs-on: [self-hosted, linux, x64]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # ❌ DO NOT checkout code here (breaks runner)
+      # Deployment uses Docker image only
 
-      - name: Verify runner environment
+      - name: Verify runner & Docker
         shell: bash
         run: |
           set -eux
           whoami
-          uname -a
+          pwd
           docker --version
 
-      # ✅ Recommended: EC2 IAM Role instead of secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -93,7 +92,7 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Pull latest image
+      - name: Pull latest image from ECR
         shell: bash
         run: |
           set -eux
@@ -116,7 +115,6 @@ jobs:
             --name networksecurity \
             ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
-      - name: Cleanup dangling images (safe)
+      - name: Cleanup dangling Docker images
         shell: bash
-        run: |
-          docker image prune -f
+        run: docker image prune -f
