@@ -38,6 +38,9 @@ jobs:
     needs: integration
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: ap-south-1   # ✅ MUMBAI
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,7 +50,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ap-south-1
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -72,6 +75,10 @@ jobs:
     needs: build-and-push-ecr-image
     runs-on: [self-hosted, linux, x64]
 
+    # ✅ Region MUST be set explicitly on EC2
+    env:
+      AWS_REGION: ap-south-1   # ✅ MUMBAI
+
     steps:
       - name: Verify runner & Docker
         shell: bash
@@ -80,8 +87,9 @@ jobs:
           whoami
           pwd
           docker --version
+          aws sts get-caller-identity
 
-      # ✅ Uses EC2 IAM Role automatically
+      # ✅ Uses EC2 IAM Role + AWS_REGION
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
