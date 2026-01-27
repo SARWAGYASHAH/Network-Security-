@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-south-1   # ✅ MUMBAI
+      AWS_REGION: ap-south-1   # Mumbai
 
     steps:
       - name: Checkout code
@@ -75,21 +75,19 @@ jobs:
     needs: build-and-push-ecr-image
     runs-on: [self-hosted, linux, x64]
 
-    # ✅ Region MUST be set explicitly on EC2
     env:
-      AWS_REGION: ap-south-1   # ✅ MUMBAI
+      AWS_REGION: ap-south-1   # Mumbai
 
     steps:
-      - name: Verify runner & Docker
+      - name: Verify runner, AWS & Docker
         shell: bash
         run: |
           set -eux
           whoami
-          pwd
           docker --version
           aws sts get-caller-identity
 
-      # ✅ Uses EC2 IAM Role + AWS_REGION
+      # Uses EC2 IAM Role + AWS_REGION
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
@@ -106,6 +104,7 @@ jobs:
           docker stop networksecurity || true
           docker rm networksecurity || true
 
+      # 🔑 DAGSHUB TOKEN PASSED HERE
       - name: Run Docker container
         shell: bash
         run: |
@@ -114,6 +113,8 @@ jobs:
             --restart unless-stopped \
             -p 8080:8080 \
             --name networksecurity \
+            -e DAGSHUB_USER=SARWAGYASHAH \
+            -e DAGSHUB_TOKEN=${{ secrets.DAGSHUB_TOKEN }} \
             ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
       - name: Cleanup dangling Docker images
