@@ -1,88 +1,98 @@
 import sys
 import os
-
 import certifi
-ca = certifi.where()
-
+import pandas as pd
 from dotenv import load_dotenv
-load_dotenv()
-mongo_db_url = os.getenv("MONGODB_URL_KEY")
-print(mongo_db_url)
-import pymongo
+
+from fastapi import FastAPI, File, UploadFile, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from uvicorn import run as app_run
+
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
-from networksecurity.pipeline.TrainingPipeline import TrainingPipeline
-
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, File, UploadFile,Request
-from uvicorn import run as app_run
-from fastapi.responses import Response
-from starlette.responses import RedirectResponse
-import pandas as pd
-
 from networksecurity.utils.main_utils.utils import load_object
-
 from networksecurity.utils.ml_utils.model.estimator import NetworkModel
 
+# ==========================
+# ENV & DATABASE SETUP
+# ==========================
+load_dotenv()
+ca = certifi.where()
 
-client = pymongo.MongoClient(mongo_db_url, tlsCAFile=ca)
+MONGODB_URL = os.getenv("MONGODB_URL_KEY")
 
-from networksecurity.constants.training_pipeline import DATA_INGESTION_COLLECTION_NAME
-from networksecurity.constants.training_pipeline import DATA_INGESTION_DATABASE_NAME
-
-database = client[DATA_INGESTION_DATABASE_NAME]
-collection = database[DATA_INGESTION_COLLECTION_NAME]
-
-app = FastAPI()
-origins = ["*"]
+# ==========================
+# FASTAPI APP SETUP
+# ==========================
+app = FastAPI(title="CyberShield - Network Security")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-from fastapi.templating import Jinja2Templates
-templates = Jinja2Templates(directory="./templates")
+templates = Jinja2Templates(directory="templates")
 
-@app.get("/", tags=["authentication"])
-async def index():
-    return RedirectResponse(url="/docs")
+# ==========================
+# HOME PAGE (UI)
+# ==========================
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
+    )
 
-@app.get("/train")
-async def train_route():
-    try:
-        train_pipeline=TrainingPipeline()
-        train_pipeline.run_pipeline()
-        return Response("Training is successful")
-    except Exception as e:
-        raise NetworkSecurityException(e,sys)
-    
+# ==========================
+# PREDICTION ENDPOINT
+# ==========================
 @app.post("/predict")
-async def predict_route(request: Request,file: UploadFile = File(...)):
+async def predict_route(request: Request, file: UploadFile = File(...)):
     try:
-        df=pd.read_csv(file.file)
-        #print(df)
-        preprocesor=load_object("final_model/preprocessor.pkl")
-        final_model=load_object("final_model/model.pkl")
-        network_model = NetworkModel(preprocessor=preprocesor,model=final_model)
-        print(df.iloc[0])
-        y_pred = network_model.predict(df)
-        print(y_pred)
-        df['predicted_column'] = y_pred
-        print(df['predicted_column'])
-        #df['predicted_column'].replace(-1, 0)
-        #return df.to_json()
-        df.to_csv('prediction_output/output.csv')
-        table_html = df.to_html(classes='table table-striped')
-        #print(table_html)
-        return templates.TemplateResponse("table.html", {"request": request, "table": table_html})
-        
-    except Exception as e:
-            raise NetworkSecurityException(e,sys)
+        df = pd.read_csv(file.file)
 
-    
-if __name__=="__main__":### made some vhnageds
-    app_run(app,host="0.0.0.0",port=8080)
+        preprocessor = load_object("final_model/preprocessor.pkl")
+        model = load_object("final_model/model.pkl")
+
+        network_model = NetworkModel(preprocessor=preprocessor, model=model)
+        preds = network_model.predict(df)
+
+        # Example logic
+        malicious_count = (preds == 1).sum()
+        confidence = int((malicious_count / len(preds)) * 100)
+
+        prediction = "Malicious Traffic" if malicious_count > 0 else "Safe Traffic"
+
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "prediction": prediction,
+                "confidence": confidence
+            }
+        )
+
+    except Exception as e:
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "error": str(e)
+            }
+        )
+
+
+# ==========================
+# MAIN ENTRY POINT
+# ==========================
+if __name__ == "__main__":
+    app_run(
+        app,
+        host="0.0.0.0",
+        port=8080
+    )

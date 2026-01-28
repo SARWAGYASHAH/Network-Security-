@@ -3,159 +3,149 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Predicted Data</title>
+    <title>CyberShield | Network Threat Detection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --bg-main: #0f172a;
-            --bg-card: #020617;
-            --bg-table: #020617;
-            --border: #1e293b;
-            --text-main: #e5e7eb;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --accent-soft: rgba(56, 189, 248, 0.15);
-        }
-
         * {
-            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            margin: 0;
+            background: radial-gradient(circle at top, #0a0a0f, #000);
             min-height: 100vh;
-            background: linear-gradient(135deg, #020617, #0f172a);
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-main);
         }
 
-        .container {
-            width: 92%;
-            max-width: 1100px;
-            background: var(--bg-card);
-            padding: 32px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        .glass {
+            background: rgba(20, 22, 32, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 24px;
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--accent);
-            letter-spacing: 0.5px;
+        .btn-primary {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
         }
 
-        .subtitle {
-            text-align: center;
-            margin-bottom: 28px;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            background: var(--bg-table);
-        }
-
-        thead {
-            background: #020617;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th,
-        td {
-            padding: 14px 16px;
-            text-align: left;
-        }
-
-        th {
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 0.08em;
-        }
-
-        tbody tr {
-            border-bottom: 1px solid var(--border);
-            transition: background 0.2s ease;
-        }
-
-        tbody tr:hover {
-            background: var(--accent-soft);
-        }
-
-        td {
-            color: var(--text-main);
-        }
-
-        tbody tr:last-child {
-            border-bottom: none;
-        }
-
-        /* Scrollbar (Webkit) */
-        ::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #020617;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
-        }
-
-        @media (max-width: 600px) {
-            h2 {
-                font-size: 20px;
-            }
-
-            .container {
-                padding: 20px;
-            }
-
-            table {
-                font-size: 13px;
-            }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.55);
         }
     </style>
 </head>
 
-<body>
-    <div class="container">
-        <h2>Prediction Results</h2>
-        <div class="subtitle">
-            Machine Learning Based Network Security Analysis
+<body class="text-gray-300 flex items-center justify-center p-6">
+
+    <div class="max-w-4xl w-full">
+
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                CyberShield
+            </h1>
+            <p class="text-gray-400 mt-4 text-lg">
+                AI-powered Network Threat Detection
+            </p>
         </div>
 
-        <div class="table-wrapper">
-            {{ table | safe }}
+        <!-- Upload Card -->
+        <div class="glass rounded-2xl p-8 mb-10">
+            <form action="/predict" method="post" enctype="multipart/form-data" id="uploadForm">
+
+                <div class="border-2 border-dashed border-cyan-500/30 rounded-xl p-8 text-center cursor-pointer"
+                    onclick="document.getElementById('fileInput').click()">
+
+                    <p class="text-xl font-semibold mb-2">Upload CSV File</p>
+                    <p class="text-gray-400">Click or drag & drop network traffic data</p>
+
+                    <input type="file" name="file" id="fileInput" accept=".csv" class="hidden" required>
+
+                    <p id="fileName" class="text-cyan-400 mt-4 hidden"></p>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button type="submit" class="btn-primary text-black font-semibold px-12 py-4 rounded-xl text-lg">
+                        Run Prediction
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- RESULTS -->
+        {% if prediction or error %}
+        <div class="glass rounded-2xl p-8">
+
+            {% if prediction %}
+            <h2 class="text-3xl font-semibold mb-6">Detection Result</h2>
+
+            <!-- Status -->
+            <p class="text-2xl font-bold mb-6
+            {% if 'malicious' in prediction.lower() %}
+                text-red-400
+            {% else %}
+                text-green-400
+            {% endif %}
+        ">
+                {{ prediction }}
+            </p>
+
+            <!-- Confidence -->
+            {% if confidence %}
+            <p class="text-gray-400 mb-2">Confidence Level</p>
+
+            <div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
+                <div class="h-3 rounded-full
+                {% if 'malicious' in prediction.lower() %}
+                    bg-gradient-to-r from-red-500 to-pink-600
+                {% else %}
+                    bg-gradient-to-r from-green-400 to-cyan-500
+                {% endif %}
+                " data-confidence="{{ confidence }}" id="confidenceBar">
+                </div>
+            </div>
+
+            <p class="text-right mt-2 text-xl font-bold">{{ confidence }}%</p>
+            {% endif %}
+            {% endif %}
+
+            {% if error %}
+            <p class="text-red-400 text-lg">{{ error }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="text-center text-gray-500 mt-10 text-sm">
+            © 2024 CyberShield • Advanced Threat Detection
         </div>
     </div>
+
+    <script>
+        // File name display
+        const fileInput = document.getElementById("fileInput");
+        const fileName = document.getElementById("fileName");
+
+        if (fileInput) {
+            fileInput.addEventListener("change", () => {
+                fileName.textContent = fileInput.files[0].name;
+                fileName.classList.remove("hidden");
+            });
+        }
+
+        // Confidence bar
+        const bar = document.getElementById("confidenceBar");
+        if (bar) {
+            const value = bar.getAttribute("data-confidence");
+            bar.style.width = value + "%";
+        }
+    </script>
+
 </body>
 
 </html>
