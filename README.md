@@ -179,7 +179,7 @@ mlflow ui
 Then open browser at:
 
 ```
-http://localhost:5000
+http://13.201.174.16:8080
 ```
 
 ---
@@ -205,19 +205,50 @@ http://localhost:5000
 * Designed scalable, maintainable ML system
 
 ---
+---
 
-## 📌 Future Enhancements
+## 🔐 Security & Best Practices
+- Environment variables for managing secrets and credentials
+- IAM roles instead of hardcoded AWS access keys
+- Secure access control for MongoDB Atlas
+- AWS S3 bucket policies for controlled and restricted access
+- Separation of configuration, secrets, and code
+- Logging without exposing sensitive information
 
-* Model deployment using FastAPI
-* CI/CD integration
-* Dockerization
-* Cloud deployment (AWS/GCP/Azure)
+---
+
+## 📌 Use Cases
+- Production-ready Machine Learning pipeline
+- End-to-end MLOps workflow demonstration
+- Network security threat detection systems
+- Cloud-based ML systems
+- Resume and portfolio project for ML / MLOps roles
+- Interview-ready real-world ML engineering example
+
+---
+
+## 📜 Keywords (ATS Optimized)
+**MLflow, AWS Deployment, ETL Pipelines, MongoDB Atlas, EC2 Instance, Docker, Amazon ECR, AWS S3 Buckets, MLOps, Cloud Computing, Machine Learning, DevOps, Network Security, Data Validation, Model Monitoring**
+
+---
+
+## 👤 Author
+**SARWAGYA SHAH**  
+Machine Learning Engineer | Data Scientist  
+
+GitHub: (https://github.com/SARWAGYASHAH) 
+LinkedIn:(https://www.linkedin.com/in/sarwagyashahonline/)
+
+---
+
+⭐ *If you find this project useful, consider giving it a star and feel free to connect!*
+
 
 ---
 
 ## 👤 Author
 
-**Your Name**
+**SARWAGYA SHAH**
 Machine Learning Engineer | Data Scientist
 
 ---
